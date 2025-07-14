@@ -1,21 +1,30 @@
 #!/usr/bin/python3
 """
-Return top 10 posts of a subreddit.
+Fetch and print top 10 hot posts from a subreddit using Reddit API.
 """
 
-import json
 import requests
 
 
 def top_ten(subreddit):
-    url = 'https://www.reddit.com/r/{}/hot.json?limit=10'.format(subreddit)
-    headers = {'User-Agent': 'Mozilla/5.0'}
-    response = requests.get(url, headers=headers)
+    url = f'https://www.reddit.com/r/{subreddit}/hot.json?limit=10'
+    headers = {
+        'User-Agent': 'python:subreddit.top_ten:v1.0 (by /u/your_reddit_username)'
+    }
 
-    if response.status_code == 200:
-        data = json.loads(response.text)
-        for post in data['data']['children']:
-            title = post['data']['title']
-            print(title)
-    else:
+    response = requests.get(url, headers=headers, allow_redirects=False)
+
+    if response.status_code != 200:
         print(None)
+        return
+
+    data = response.json()
+
+    posts = data.get('data', {}).get('children', [])
+
+    if not posts:
+        print(None)
+        return
+
+    for post in posts:
+        print(post['data']['title'])
